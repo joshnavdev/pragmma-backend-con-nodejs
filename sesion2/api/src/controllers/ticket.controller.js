@@ -1,61 +1,60 @@
-import fs from 'fs';
-import crypto from 'crypto';
+import { nextTick } from 'process';
+import ticketDB from '../db.js';
+import ApiError from '../utils/errorApi.js';
 
-const DB_PATH = 'db/tickets.json';
+const validateAndGetTicket = async (id) => {
+  const ticket = await ticketDB.getById(id);
 
-const tickets = JSON.parse(fs.readFileSync(DB_PATH));
+  if (!ticket) {
+    throw new ApiError(404, 'Ticket no encontrado');
+  }
 
-const generateUUID = () => {
-  return crypto.randomBytes(16).toString('hex');
+  return ticket;
 };
 
+// const catchAsync = (fn) => {
+//   return async (req, res, next) => {
+//     try {
+//       await fn(req, res);
+//     } catch (error) {
+//       next(error);
+//     }
+//   };
+// };
+
+// Forma acortada
+const catchAsync = (fn) => (req, res, next) => fn(req, res, next).catch(next);
+
 export default class TicketController {
-  listTickets = (req, res) => {
-    const ticketsFormatted = Object.keys(tickets).map((key) => {
-      return {
-        ...tickets[key],
-      };
-    });
+  listTickets = catchAsync(async (req, res) => {
+    const tickets = await ticketDB.getAll();
 
     return res.status(200).json({
       status: 'sucess',
       requestedAt: req.requestTime,
       data: {
-        tickets: ticketsFormatted,
+        tickets,
       },
     });
-  };
+  });
 
-  createTicket = (req, res) => {
+  createTicket = catchAsync(async (req, res) => {
     const { body } = req;
-    const id = generateUUID();
 
-    const ticket = { id, ...body };
+    const ticket = await ticketDB.create(body);
 
-    tickets[id] = ticket;
-
-    fs.writeFile(DB_PATH, JSON.stringify(tickets, null, 2), (err) => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          ticket,
-        },
-      });
+    res.status(201).json({
+      status: 'success',
+      data: {
+        ticket,
+      },
     });
-  };
+  });
 
-  getTicket = (req, res) => {
+  getTicket = catchAsync(async (req, res, next) => {
     const { id } = req.params;
 
-    const ticket = tickets[id];
-
-    if (!ticket) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Ticket no encontrado',
-        data: null,
-      });
-    }
+    const ticket = await validateAndGetTicket(id);
 
     return res.status(200).json({
       status: 'success',
@@ -63,53 +62,32 @@ export default class TicketController {
         ticket,
       },
     });
-  };
+  });
 
-  updateTicket = (req, res) => {
+  updateTicket = catchAsync(async (req, res) => {
     const { id } = req.params;
     const { body } = req;
 
-    const ticket = tickets[id];
-
-    if (!ticket) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Ticket no encontrado',
-        data: null,
-      });
-    }
+    const ticket = await validateAndGetTicket(id);
 
     const updatedTicket = { ...ticket, ...body };
 
-    tickets[id] = updatedTicket;
+    await ticketDB.updateById(id, updatedTicket);
 
-    fs.writeFile(DB_PATH, JSON.stringify(tickets, null, 2), (err) => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          ticket,
-        },
-      });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        ticket: updatedTicket,
+      },
     });
-  };
+  });
 
-  deleteTicket = (req, res) => {
+  deleteTicket = catchAsync(async (req, res) => {
     const { id } = req.params;
 
-    const ticket = tickets[id];
+    await validateAndGetTicket(id);
+    await ticketDB.deleteById(id);
 
-    if (!ticket) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Ticket no encontrado',
-        data: null,
-      });
-    }
-
-    delete tickets[id];
-
-    fs.writeFile(DB_PATH, JSON.stringify(tickets, null, 2), (err) => {
-      res.status(204).end();
-    });
-  };
+    res.status(204).end();
+  });
 }
