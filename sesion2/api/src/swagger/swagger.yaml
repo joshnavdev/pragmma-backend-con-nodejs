@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: Ticketera API
+  version: 1.0.0
+  description: Documentacion de la API de la ticketera
+
+paths:
+  /tickets:
+    get:
+      summary: Listar tickets
+      description: Lista todos los tickts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Estado de la operacion
+                    example: success
+                  data:
+                    type: object
+                    description: Datos de la operacion
+                    properties:
+                      tickets:
+                        type: array
+                        description: Lista de tickets
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              description: Identificador del ticket
+                            content:
+                              type: string
+                              description: Contenido del ticket
