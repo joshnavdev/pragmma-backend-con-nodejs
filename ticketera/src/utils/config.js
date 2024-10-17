@@ -8,6 +8,10 @@ const config = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
   },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    accessTokenExpirationMinutes: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
+  },
 };
 
 export default config;

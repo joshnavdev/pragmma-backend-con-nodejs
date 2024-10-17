@@ -3,6 +3,7 @@ import { DataTypes, Model } from 'sequelize';
 class Comment extends Model {
   static associate(models) {
     this.belongsTo(models.tickets, { foreignKey: 'ticket_id' });
+    this.belongsTo(models.users, { foreignKey: 'user_id' });
   }
 
   static init(sequelize) {
@@ -10,6 +11,7 @@ class Comment extends Model {
       {
         comment: DataTypes.STRING,
         ticket_id: DataTypes.INTEGER,
+        user_id: DataTypes.INTEGER,
         created_at: DataTypes.DATE,
         updated_at: DataTypes.DATE,
       },
