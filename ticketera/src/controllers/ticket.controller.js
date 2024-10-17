@@ -1,33 +1,18 @@
 import { nextTick } from 'process';
 import ticketDB from '../db.js';
 import ApiError from '../utils/errorApi.js';
-
-const validateAndGetTicket = async (id) => {
-  const ticket = await ticketDB.getById(id);
-
-  if (!ticket) {
-    throw new ApiError(404, 'Ticket no encontrado');
-  }
-
-  return ticket;
-};
-
-// const catchAsync = (fn) => {
-//   return async (req, res, next) => {
-//     try {
-//       await fn(req, res);
-//     } catch (error) {
-//       next(error);
-//     }
-//   };
-// };
+import TicketService from '../services/ticket.service.js';
 
 // Forma acortada
 const catchAsync = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
 export default class TicketController {
+  constructor() {
+    this.ticketService = new TicketService();
+  }
+
   listTickets = catchAsync(async (req, res) => {
-    const tickets = await ticketDB.getAll();
+    const tickets = await this.ticketService.listTickets();
 
     return res.status(200).json({
       status: 'sucess',
@@ -41,7 +26,7 @@ export default class TicketController {
   createTicket = catchAsync(async (req, res) => {
     const { body } = req;
 
-    const ticket = await ticketDB.create(body);
+    const ticket = await this.ticketService.createTicket(body);
 
     res.status(201).json({
       status: 'success',
@@ -54,7 +39,7 @@ export default class TicketController {
   getTicket = catchAsync(async (req, res, next) => {
     const { id } = req.params;
 
-    const ticket = await validateAndGetTicket(id);
+    const ticket = await this.ticketService.getTicket(id);
 
     return res.status(200).json({
       status: 'success',
@@ -68,16 +53,12 @@ export default class TicketController {
     const { id } = req.params;
     const { body } = req;
 
-    const ticket = await validateAndGetTicket(id);
-
-    const updatedTicket = { ...ticket, ...body };
-
-    await ticketDB.updateById(id, updatedTicket);
+    const ticket = await this.ticketService.updateTicket(id, body);
 
     res.status(200).json({
       status: 'success',
       data: {
-        ticket: updatedTicket,
+        ticket,
       },
     });
   });
@@ -85,9 +66,22 @@ export default class TicketController {
   deleteTicket = catchAsync(async (req, res) => {
     const { id } = req.params;
 
-    await validateAndGetTicket(id);
-    await ticketDB.deleteById(id);
+    await this.ticketService.deleteTicket(id);
 
     res.status(204).end();
+  });
+
+  createTicketComment = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const { body } = req;
+
+    const newComment = await this.ticketService.createTicketComment(id, body);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        comment: newComment,
+      },
+    });
   });
 }
