@@ -3,9 +3,7 @@ import jwt from 'jsonwebtoken';
 import UserRepository from '../repositories/user.repository.js';
 import ApiError from '../utils/errorApi.js';
 import config from '../utils/config.js';
-
-const SALT_ROUNDS = 10;
-const ACCESS_TOKEN_TYPE = 'ACCESS_TOKEN';
+import * as authConstants from '../constants/auth.constant.js';
 
 class AuthService {
   constructor() {
@@ -27,7 +25,7 @@ class AuthService {
     }
 
     // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(password, authConstants.SALT_ROUNDS);
 
     // Crear el usuario
     await this.userRepository.create({ email, password: hashedPassword });
@@ -51,17 +49,17 @@ class AuthService {
     return existedUser;
   };
 
-  generateToken = (id, expiresInMinutes, tokenType, data) => {
+  generateToken = (id, expiresIn, tokenType, data) => {
     const payload = { sub: id, type: tokenType, data };
 
-    return jwt.sign(payload, config.jwt.secret, { expiresIn: `${expiresInMinutes}` });
+    return jwt.sign(payload, config.jwt.secret, { expiresIn });
   };
 
   generateAuthTokens = (user) => {
-    const { accessTokenExpirationMinutes } = config.jwt;
+    const { accessTokenExpiration } = config.jwt;
 
     const data = { id: user.id, email: user.email };
-    const accessToken = this.generateToken(user.id, accessTokenExpirationMinutes, ACCESS_TOKEN_TYPE, data);
+    const accessToken = this.generateToken(user.id, accessTokenExpiration, authConstants.ACCESS_TOKEN_TYPE, data);
 
     return { accessToken };
   };

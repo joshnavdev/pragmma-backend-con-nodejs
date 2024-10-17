@@ -10,7 +10,7 @@ const config = {
   },
   jwt: {
     secret: process.env.JWT_SECRET,
-    accessTokenExpirationMinutes: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
+    accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
   },
 };
 

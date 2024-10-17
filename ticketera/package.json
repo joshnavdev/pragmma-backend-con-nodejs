@@ -22,6 +22,8 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "mysql2": "^3.11.3",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "sequelize": "^6.37.4",
     "swagger-parser": "^10.0.3",
     "swagger-ui-express": "^5.0.1"
