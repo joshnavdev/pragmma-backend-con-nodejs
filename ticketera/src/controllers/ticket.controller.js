@@ -1,6 +1,3 @@
-import { nextTick } from 'process';
-import ticketDB from '../db.js';
-import ApiError from '../utils/errorApi.js';
 import TicketService from '../services/ticket.service.js';
 
 // Forma acortada
