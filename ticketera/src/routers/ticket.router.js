@@ -12,4 +12,6 @@ ticketRouter
   .patch(ticketController.updateTicket)
   .delete(ticketController.deleteTicket);
 
+ticketRouter.route('/tickets/:id/comments').post(ticketController.createTicketComment);
+
 export default ticketRouter;
