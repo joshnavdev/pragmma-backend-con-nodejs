@@ -1,5 +1,6 @@
 import express from 'express';
 import TicketController from '../controllers/ticket.controller.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 
 const ticketController = new TicketController();
 const ticketRouter = express.Router();
@@ -19,13 +20,16 @@ const ticketRouter = express.Router();
 // });
 // ticketRouter.use(passport.authenticate('jwt', { session: false }));
 
-ticketRouter.route('/tickets').get(ticketController.listTickets).post(ticketController.createTicket);
+ticketRouter
+  .route('/tickets')
+  .get(authenticate, ticketController.listTickets)
+  .post(authenticate, ticketController.createTicket);
 
 ticketRouter
   .route('/tickets/:id')
-  .get(ticketController.getTicket)
-  .patch(ticketController.updateTicket)
-  .delete(ticketController.deleteTicket);
+  .get(authenticate, ticketController.getTicket)
+  .patch(authenticate, ticketController.updateTicket)
+  .delete(authenticate, ticketController.deleteTicket);
 
 ticketRouter.route('/tickets/:id/comments').post(ticketController.createTicketComment);
 

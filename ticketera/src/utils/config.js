@@ -12,6 +12,10 @@ const config = {
     secret: process.env.JWT_SECRET,
     accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  },
 };
 
 export default config;

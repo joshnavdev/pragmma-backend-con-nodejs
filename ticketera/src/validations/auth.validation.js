@@ -17,3 +17,5 @@ export const signupValidation = [
 ];
 
 export const loginValidation = [validateEmail, body('password').notEmpty().withMessage('Contraseña es requerido')];
+
+export const loginGoogleValidation = [body('code').notEmpty().withMessage('Code es requerido')];

@@ -4,10 +4,14 @@ import UserRepository from '../repositories/user.repository.js';
 import ApiError from '../utils/errorApi.js';
 import config from '../utils/config.js';
 import * as authConstants from '../constants/auth.constant.js';
+import { OAuth2Client } from 'google-auth-library';
+import FederatedCredentialRepository from '../repositories/federatedCredential.repository.js';
 
 class AuthService {
   constructor() {
     this.userRepository = new UserRepository();
+    this.federatedCredentialRepository = new FederatedCredentialRepository();
+    this.oAuth2Client = new OAuth2Client(config.google.clientId, config.google.clientSecret, 'postmessage');
   }
 
   signup = async (userBody) => {
@@ -65,15 +69,33 @@ class AuthService {
   };
 
   login = async ({ email, password }) => {
-    console.log({ email, password });
-
     const existedUser = await this.validateUser(email);
 
     await this.validatePassword(password, existedUser.password);
 
-    const tokens = this.generateAuthTokens(existedUser);
+    return this.generateAuthTokens(existedUser);
+  };
 
-    return tokens;
+  loginGoogle = async ({ code }) => {
+    const { tokens: oAuthTokens } = await this.oAuth2Client.getToken(code);
+    const tokenInfo = await this.oAuth2Client.getTokenInfo(oAuthTokens.access_token);
+    const { sub, email } = tokenInfo;
+    const existedProvider = await this.federatedCredentialRepository.getOneByProviderAndProviderId('google', sub);
+    let user;
+
+    if (!existedProvider) {
+      user = await this.userRepository.getOneByEmail(email);
+
+      if (!user) {
+        user = await this.userRepository.create({ email });
+      }
+
+      await this.federatedCredentialRepository.create({ provider: 'google', provider_id: sub, user_id: user.id });
+    } else {
+      user = await this.userRepository.getById(existedProvider.user_id);
+    }
+
+    return this.generateAuthTokens(user);
   };
 }
 

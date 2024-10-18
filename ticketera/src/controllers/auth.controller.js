@@ -36,6 +36,19 @@ class AuthController {
       data: tokens,
     });
   });
+
+  loginGoogle = catchAsync(async (req, res) => {
+    const matchedBody = matchedData(req, { locations: ['body'] });
+
+    const tokens = await this.authService.loginGoogle(matchedBody);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        tokens,
+      },
+    });
+  });
 }
 
 export default AuthController;
