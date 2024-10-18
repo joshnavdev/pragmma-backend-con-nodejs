@@ -20,16 +20,15 @@ const ticketRouter = express.Router();
 // });
 // ticketRouter.use(passport.authenticate('jwt', { session: false }));
 
-ticketRouter
-  .route('/tickets')
-  .get(authenticate, ticketController.listTickets)
-  .post(authenticate, ticketController.createTicket);
+ticketRouter.all('/tickets/?*', authenticate);
+
+ticketRouter.route('/tickets/').get(ticketController.listTickets).post(ticketController.createTicket);
 
 ticketRouter
   .route('/tickets/:id')
-  .get(authenticate, ticketController.getTicket)
-  .patch(authenticate, ticketController.updateTicket)
-  .delete(authenticate, ticketController.deleteTicket);
+  .get(ticketController.getTicket)
+  .patch(ticketController.updateTicket)
+  .delete(ticketController.deleteTicket);
 
 ticketRouter.route('/tickets/:id/comments').post(ticketController.createTicketComment);
 
