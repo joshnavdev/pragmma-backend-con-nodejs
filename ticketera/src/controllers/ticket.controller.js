@@ -1,7 +1,5 @@
 import TicketService from '../services/ticket.service.js';
-
-// Forma acortada
-const catchAsync = (fn) => (req, res, next) => fn(req, res, next).catch(next);
+import { catchAsync } from '../utils/controller.js';
 
 export default class TicketController {
   constructor() {
