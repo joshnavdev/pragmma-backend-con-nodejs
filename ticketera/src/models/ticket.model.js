@@ -3,6 +3,7 @@ import { DataTypes, Model } from 'sequelize';
 class Ticket extends Model {
   static associate(models) {
     this.hasMany(models.comments, { foreignKey: 'ticket_id' });
+    this.belongsTo(models.users, { foreignKey: 'user_id' });
   }
 
   static init(sequelize) {
