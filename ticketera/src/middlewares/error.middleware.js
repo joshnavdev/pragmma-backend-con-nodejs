@@ -5,6 +5,7 @@ export const errorConverter = (error, req, res, next) => {
 
   if (!(handledError instanceof ApiError)) {
     handledError = new ApiError(500, error.message, false);
+    handledError.stack = error.stack;
   }
 
   next(handledError);
