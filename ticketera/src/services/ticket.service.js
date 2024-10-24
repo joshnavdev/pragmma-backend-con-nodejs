@@ -1,11 +1,14 @@
-import CommentRepository from '../repositories/comment.repository.js';
-import TicketRepository from '../repositories/ticket.repository.js';
 import ApiError from '../utils/errorApi.js';
 
 class TicketService {
-  constructor() {
-    this.ticketRepository = new TicketRepository();
-    this.commentRepository = new CommentRepository();
+  /**
+   *
+   * @param {import('../repositories/ticket.repository.js').default} ticketRepository
+   * @param {import('../repositories/comment.repository.js').default} commentRepository
+   */
+  constructor(ticketRepository, commentRepository) {
+    this.ticketRepository = ticketRepository;
+    this.commentRepository = commentRepository;
   }
 
   validateAndGetTicket = async (id, withComment = false) => {
