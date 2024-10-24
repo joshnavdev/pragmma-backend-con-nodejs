@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './initContainer.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerParser from '@apidevtools/swagger-parser';
 import app from './app.js';

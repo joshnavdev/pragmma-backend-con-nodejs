@@ -1,9 +1,12 @@
-import TicketService from '../services/ticket.service.js';
-import { catchAsync } from '../utils/controller.js';
+import { catchAsync } from '../utils/controller.js'; // ESModule
 
 export default class TicketController {
-  constructor() {
-    this.ticketService = new TicketService();
+  /**
+   *
+   * @param {import('../services/ticket.service.js').default} ticketService
+   */
+  constructor(ticketService) {
+    this.ticketService = ticketService;
   }
 
   listTickets = catchAsync(async (req, res) => {
@@ -31,7 +34,7 @@ export default class TicketController {
     });
   });
 
-  getTicket = catchAsync(async (req, res, next) => {
+  getTicket = catchAsync(async (req, res) => {
     const { id } = req.params;
 
     const ticket = await this.ticketService.getTicket(id);

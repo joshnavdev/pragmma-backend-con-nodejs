@@ -1,3 +1,4 @@
+import { matchedData } from 'express-validator';
 import AuthService from '../services/auth.service.js';
 import { catchAsync } from '../utils/controller.js';
 
@@ -7,7 +8,9 @@ class AuthController {
   }
 
   signup = catchAsync(async (req, res) => {
-    await this.authService.signup(req.body);
+    const matchedBody = matchedData(req, { locations: ['body'] });
+
+    await this.authService.signup(matchedBody);
 
     res.status(201).json({
       status: 'success',
@@ -17,7 +20,9 @@ class AuthController {
   });
 
   login = catchAsync(async (req, res) => {
-    const tokens = await this.authService.login(req.body);
+    const matchedBody = matchedData(req, { locations: ['body'] });
+
+    const tokens = await this.authService.login(matchedBody);
 
     res.status(200).json({
       status: 'success',
