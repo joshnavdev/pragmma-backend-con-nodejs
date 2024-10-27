@@ -1,22 +1,24 @@
 {
-  "name": "curso-backend-con-nodejs-oficial",
+  "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@types/node": "^22.7.4",
     "express": "^4.21.1",
     "redis": "^4.7.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
     "nodemon": "^3.1.7"
   }
 }
