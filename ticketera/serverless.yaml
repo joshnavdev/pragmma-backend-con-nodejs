@@ -1,0 +1,17 @@
+service: ticketera-api
+
+plugins:
+  - serverless-jetpack
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+
+functions:
+  main:
+    handler: src/lambda.handler
+    events:
+      - httpApi:
+          method: ANY
+          path: /{proxy+}

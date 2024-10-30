@@ -2,24 +2,30 @@ import 'dotenv/config';
 import './initContainer.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerParser from '@apidevtools/swagger-parser';
+import serverlessExpress from '@vendia/serverless-express';
 import app from './app.js';
-import config from './utils/config.js';
 import { initDatabase } from './utils/database.js';
 import './models/index.js';
 
-const startServer = async () => {
+let serverlessExpressInstance;
+
+const setup = async (event, context) => {
   try {
     await initDatabase();
 
     const swaggerDocument = await swaggerParser.bundle('src/swagger/swagger.yaml');
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-    await app.listen(config.port, () => {
-      console.log(`Escuchando en el puerto ${config.port}`);
-    });
+    serverlessExpressInstance = serverlessExpress({ app });
+    return serverlessExpressInstance(event, context);
   } catch (error) {
     console.error(error);
   }
 };
 
-startServer();
+export const handler = (event, context) => {
+  console.log(process.env);
+  if (serverlessExpressInstance) return serverlessExpressInstance(event, context);
+
+  return setup(event, context);
+};
