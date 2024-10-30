@@ -24,7 +24,6 @@ const setup = async (event, context) => {
 };
 
 export const handler = (event, context) => {
-  console.log(process.env);
   if (serverlessExpressInstance) return serverlessExpressInstance(event, context);
 
   return setup(event, context);

@@ -28,7 +28,7 @@
     "passport-jwt": "^4.0.1",
     "rsdi": "^3.0.3",
     "sequelize": "^6.37.4",
-    "serverless": "^4.4.7",
+    "serverless": "^3.39.0",
     "swagger-parser": "^10.0.3",
     "swagger-ui-express": "^5.0.1"
   },

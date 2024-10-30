@@ -7,6 +7,7 @@ const config = {
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
     dialect: 'mysql',
+    port: process.env.DB_PORT,
   },
   jwt: {
     secret: process.env.JWT_SECRET,

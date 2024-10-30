@@ -1,6 +1,8 @@
 import { Sequelize } from 'sequelize';
 import config from './config.js';
 
+console.log(config);
+
 export const db = new Sequelize({ ...config.database, logging: false });
 
 export const initDatabase = async () => {
