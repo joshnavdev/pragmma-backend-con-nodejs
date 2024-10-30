@@ -1,17 +1,19 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import UserRepository from '../repositories/user.reposity.js';
 import ApiError from '../utils/errorApi.js';
 import config from '../utils/config.js';
 import { OAuth2Client } from 'google-auth-library';
-
-const SALT_ROUND = 10;
-const ACCESS_TOKEN_TYPE = 'ACCESS_TOKEN';
+import FederatedCredentialRepository from '../repositories/federatedCredential.repository.js';
+import TokenService from './token.service.js';
+import BcryptAdapter from '../adapters/bcrypt.adapter.js';
 
 class AuthService {
   constructor() {
+    // NOTA: Instanciar en el constructor no es buena practica!!!!!
     this.userRepository = new UserRepository();
+    this.federatedCredentialRepository = new FederatedCredentialRepository();
     this.oAuth2Client = new OAuth2Client(config.google.clientId, config.google.clientSecret, 'postmessage');
+    this.tokenService = new TokenService();
+    this.encryptionAdapter = new BcryptAdapter();
   }
 
   signup = async (userBody) => {
@@ -30,7 +32,8 @@ class AuthService {
     }
 
     // Hasear la constranha
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUND);
+    const hashedPassword = await this.encryptionAdapter.hashPassword(password);
+    // const hashedPassword = await bcrypt.hash(password, SALT_ROUND);
 
     // crear el usuario
     await this.userRepository.create({ email, password: hashedPassword });
@@ -47,25 +50,12 @@ class AuthService {
   };
 
   validatePassword = async (password, hashedPassword) => {
-    const passwordMatch = await bcrypt.compare(password, hashedPassword);
+    // const passwordMatch = await bcrypt.compare(password, hashedPassword);
+    const passwordMatch = await this.encryptionAdapter.comparePassword(password, hashedPassword);
 
     if (!passwordMatch) {
       throw new ApiError(404, 'Credeciales incorrectas');
     }
-  };
-
-  generateToken = (id, expiresIn, tokenType, data) => {
-    const payload = { sub: id, type: tokenType, data };
-
-    return jwt.sign(payload, config.jwt.secret, { expiresIn });
-  };
-
-  generateAuthTokens = (user) => {
-    const { accessTokenExpiration } = config.jwt;
-    const data = { id: user.id, email: user.email };
-    const accessToken = this.generateToken(user.id, accessTokenExpiration, ACCESS_TOKEN_TYPE, data);
-
-    return { accessToken };
   };
 
   login = async (authBody) => {
@@ -79,28 +69,38 @@ class AuthService {
     await this.validatePassword(password, hashedPassword);
 
     // Generar los tokens
-    const tokens = this.generateAuthTokens(existedUser);
+    const tokens = this.tokenService.generateAuthTokens(existedUser);
 
     return tokens;
   };
 
   loginGoogle = async (code) => {
+    // Obtener el token de google usando el code
     const { tokens } = await this.oAuth2Client.getToken(code);
+    // Obtener la informacion del token
     const tokenInfo = await this.oAuth2Client.getTokenInfo(tokens.access_token);
-
-    const { email } = tokenInfo;
-
-    const existedUser = await this.userRepository.getOneByEmail(email);
-
+    // Verificar si existe algun provider
+    const { sub, email } = tokenInfo;
+    const existedProvider = await this.federatedCredentialRepository.getOneByProviderAndProviderId('google', sub);
     let user;
 
-    if (existedUser) {
-      user = existedUser;
+    if (existedProvider) {
+      // Si existe obtener la informacion del usuario
+      user = await this.userRepository.getById(existedProvider.user_id);
     } else {
-      user = await this.userRepository.create({ email });
+      // Si no existe verificar si existe el usuario con el correo
+      user = await this.userRepository.getOneByEmail(email);
+      if (!user) {
+        // Si no existe el usuario, crearlo
+        user = await this.userRepository.create({ email });
+      }
+
+      // Crear el provider
+      await this.federatedCredentialRepository.create({ provider: 'google', provider_id: sub, user_id: user.id });
     }
 
-    return this.generateAuthTokens(user);
+    // Generar y retornar los tokens con el usuario
+    return this.tokenService.generateAuthTokens(user);
   };
 }
 

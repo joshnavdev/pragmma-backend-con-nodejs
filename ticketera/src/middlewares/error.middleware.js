@@ -5,13 +5,14 @@ export const errorConverter = (error, req, res, next) => {
 
   if (!(handledError instanceof ApiError)) {
     handledError = new ApiError(500, error.message, false);
+    handledError.stack = error.stack;
   }
 
   next(handledError);
 };
 
-export const errorHandler = (error, req, res, next) => {
-  const { message, statusCode, isOperational, stack } = error;
+export const errorHandler = (error, req, res, _next) => {
+  const { message, statusCode, isOperational, stack, errorDetails } = error;
 
   console.error(error);
 
@@ -19,7 +20,8 @@ export const errorHandler = (error, req, res, next) => {
     status: 'fail',
     message: isOperational ? message : 'Error interno',
     isOperational: isOperational,
-    stack: stack, // solo en desarrolloi
+    errorDetails,
+    stack: stack, // solo en desarrollo
     data: null,
   });
 };

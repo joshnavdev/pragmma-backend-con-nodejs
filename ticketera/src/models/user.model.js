@@ -4,6 +4,7 @@ class User extends Model {
   static association(models) {
     this.hasMany(models.tickets, { foreignKey: 'user_id' });
     this.hasMany(models.comments, { foreignKey: 'user_id' });
+    this.hasMany(models.federated_credentials, { foreignKey: 'user_id' });
   }
 
   static init(sequelize) {
